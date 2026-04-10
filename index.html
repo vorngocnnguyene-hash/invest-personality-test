@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>投资人格测试 | CLUB 专属</title>
+  <style>
+    :root {
+      --bg: #f8f6f0;
+      --card: #ffffff;
+      --accent: #c4392d;
+      --accent-light: #e8c4b8;
+      --text: #1a1a1a;
+      --text-secondary: #6b6b6b;
+      --border: #e0dcd3;
+      --green: #2d7d46;
+      --green-light: #d4edda;
+      --bar-bg: #e8e4db;
+      --radius: 18px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.08);
+      --font-cn: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      --font-en: 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-cn);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    .screen { display: none; max-width: 480px; margin: 0 auto; padding: 24px 16px; }
+    .screen.active { display: block; }
+
+    /* CLUB Branding Bar */
+    .club-bar {
+      background: var(--text);
+      color: #fff;
+      text-align: center;
+      padding: 8px 16px;
+      font-size: 12px;
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+    .club-bar span { opacity: 0.7; }
+
+    /* Intro */
+    .intro-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 40px 24px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      margin-top: 24px;
+    }
+    .intro-card .club-logo {
+      font-size: 13px;
+      color: var(--text-secondary);
+      letter-spacing: 3px;
+      margin-bottom: 16px;
+      font-weight: 700;
+    }
+    .intro-card h1 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: var(--accent);
+    }
+    .intro-card .subtitle {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+    .intro-card .desc {
+      font-size: 14px;
+      color: var(--text);
+      text-align: left;
+      line-height: 1.8;
+      margin-bottom: 32px;
+      padding: 0 8px;
+    }
+    .intro-card .badge-row {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+    .intro-card .badge {
+      background: var(--bg);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 14px 48px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--font-cn);
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(196,57,45,0.3); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* Questions */
+    .progress-bar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg);
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+    .progress-inner {
+      height: 6px;
+      background: var(--bar-bg);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+    .progress-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .question-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      border-left: 4px solid var(--accent);
+    }
+    .question-card .q-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .question-card .q-text {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+    .options { display: flex; flex-direction: column; gap: 8px; }
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-size: 14px;
+    }
+    .option:hover { border-color: var(--accent-light); background: #fef8f6; }
+    .option.selected {
+      border-color: var(--accent);
+      background: #fef0ec;
+    }
+    .option .dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .option.selected .dot {
+      border-color: var(--accent);
+      background: var(--accent);
+    }
+    .option.selected .dot::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: #fff;
+      border-radius: 50%;
+    }
+
+    #submit-area {
+      text-align: center;
+      padding: 24px 0;
+    }
+    #submit-area .hint {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    /* Result */
+    .result-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-top: 20px;
+    }
+    .result-header {
+      background: var(--accent);
+      color: #fff;
+      padding: 32px 24px 24px;
+      text-align: center;
+      position: relative;
+    }
+    .result-header .club-watermark {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      font-size: 10px;
+      opacity: 0.5;
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+    .result-header .mode-kicker {
+      font-size: 13px;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
+    .result-header .type-code {
+      font-size: 48px;
+      font-weight: 900;
+      font-family: var(--font-en);
+      letter-spacing: 4px;
+    }
+    .result-header .type-cn {
+      font-size: 20px;
+      margin-top: 4px;
+    }
+    .result-header .match-badge {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 4px 16px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 20px;
+      font-size: 13px;
+    }
+
+    .result-body { padding: 24px; }
+    .result-intro {
+      font-size: 15px;
+      font-style: italic;
+      color: var(--accent);
+      margin-bottom: 16px;
+      padding-left: 12px;
+      border-left: 3px solid var(--accent-light);
+    }
+    .result-desc {
+      font-size: 14px;
+      line-height: 1.9;
+      margin-bottom: 24px;
+    }
+    .result-invest {
+      background: var(--green-light);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    .result-invest h3 {
+      font-size: 14px;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+    .result-invest p {
+      font-size: 13px;
+      line-height: 1.8;
+      color: #1a3a2a;
+    }
+
+    .dimensions { margin-bottom: 24px; }
+    .dimensions h3 {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+    .dim-group { margin-bottom: 12px; }
+    .dim-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 2px;
+    }
+    .dim-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      width: 80px;
+      flex-shrink: 0;
+    }
+    .dim-bar-bg {
+      flex: 1;
+      height: 8px;
+      background: var(--bar-bg);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .dim-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.8s ease;
+    }
+    .dim-level {
+      font-size: 12px;
+      font-weight: 700;
+      width: 24px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .dim-explain {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+      padding-left: 112px;
+      line-height: 1.6;
+    }
+
+    .result-footer {
+      text-align: center;
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .restart-area {
+      text-align: center;
+      padding: 24px 0;
+    }
+
+    /* Share button */
+    .share-area {
+      text-align: center;
+      padding: 16px 0 24px;
+    }
+    .btn-share {
+      display: inline-block;
+      padding: 12px 36px;
+      background: var(--text);
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--font-cn);
+    }
+    .btn-share:hover { opacity: 0.85; transform: translateY(-1px); }
+
+    /* Easter egg overlay */
+    .easter-egg-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease;
+    }
+    .easter-egg-overlay.show { display: flex; }
+    .easter-egg-card {
+      background: var(--card);
+      border-radius: 24px;
+      padding: 40px 32px;
+      max-width: 360px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: popIn 0.4s ease;
+    }
+    .easter-egg-card .emoji {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+    .easter-egg-card .title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: var(--accent);
+    }
+    .easter-egg-card .body {
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text);
+      margin-bottom: 24px;
+    }
+    .easter-egg-card .btn-close {
+      padding: 10px 32px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 24px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-cn);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; } to { opacity: 1; }
+    }
+    @keyframes popIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    /* Poster canvas (hidden) */
+    #poster-canvas { display: none; }
+  </style>
+</head>
+<body>
+
+<!-- Easter Egg Overlay -->
+<div id="easterEgg" class="easter-egg-overlay">
+  <div class="easter-egg-card">
+    <div class="emoji" id="eggEmoji">😱</div>
+    <div class="title" id="eggTitle">—</div>
+    <div class="body" id="eggBody">—</div>
+    <button class="btn-close" onclick="closeEasterEgg()">我知道了 😂</button>
+  </div>
+</div>
+
+<!-- ==================== INTRO ==================== -->
+<section id="intro" class="screen active">
+  <div class="club-bar">CLUB <span>· 诺亚正行苏州分公司</span></div>
+  <div class="intro-card">
+    <div class="club-logo">CLUB · 正行苏州</div>
+    <h1>投资人格测试</h1>
+    <p class="subtitle">测测你在市场中是什么类型的投资者</p>
+    <div class="badge-row">
+      <span class="badge">📊 20 道题</span>
+      <span class="badge">🧠 8 个维度</span>
+      <span class="badge">🎯 10 种人格</span>
+    </div>
+    <p class="desc">
+      每个人的投资风格都不同。有人稳如泰山，有人乘风破浪；有人精于计算，有人凭直觉行事。<br><br>
+      这个测试会通过 20 道情景题，评估你的风险偏好、决策风格、情绪控制等 8 个维度，帮你找到自己在市场中的真实画像。<br><br>
+      <strong>CLUB 成员专属</strong>，结果仅供娱乐参考，不构成投资建议。
+    </p>
+    <button id="startBtn" class="btn">开始测试</button>
+  </div>
+</section>
+
+<!-- ==================== TEST ==================== -->
+<section id="test" class="screen">
+  <div class="club-bar">CLUB <span>· 投资人格测试</span></div>
+  <div class="progress-bar">
+    <div class="progress-inner">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-text" id="progressText">0 / 20</div>
+  </div>
+  <div id="questionList"></div>
+  <div id="submit-area">
+    <p class="hint" id="submitHint">答完全部题目后才能提交</p>
+    <button id="submitBtn" class="btn" disabled>查看我的投资人格</button>
+  </div>
+</section>
+
+<!-- ==================== RESULT ==================== -->
+<section id="result" class="screen">
+  <div class="club-bar">CLUB <span>· 测试结果</span></div>
+  <div class="result-card" id="resultCard">
+    <div class="result-header">
+      <div class="club-watermark">CLUB · 正行苏州</div>
+      <div class="mode-kicker" id="modeKicker">你的投资人格是</div>
+      <div class="type-code" id="typeCode">—</div>
+      <div class="type-cn" id="typeCn">—</div>
+      <div class="match-badge" id="matchBadge">匹配度 —</div>
+    </div>
+    <div class="result-body">
+      <p class="result-intro" id="resultIntro">—</p>
+      <p class="result-desc" id="resultDesc">—</p>
+      <div class="result-invest" id="resultInvest">
+        <h3>💼 投资建议</h3>
+        <p id="investAdvice">—</p>
+      </div>
+      <div class="dimensions" id="dimensions">
+        <h3>📊 八维评分</h3>
+      </div>
+    </div>
+    <div class="result-footer">
+      <p>本测试由 <strong>CLUB 小葵</strong> 制作 · 结果仅供娱乐参考</p>
+      <p>投资有风险，入市需谨慎</p>
+    </div>
+  </div>
+  <div class="share-area">
+    <button id="shareBtn" class="btn-share">📋 复制结果文字分享</button>
+  </div>
+  <div class="restart-area">
+    <button id="restartBtn" class="btn" style="background:var(--text-secondary)">重新测试</button>
+  </div>
+</section>
+
+<!-- ==================== JAVASCRIPT ==================== -->
+<script>
+// ============================================================
+// 维度定义（8 个维度 × 2-3 题 = 20 题）
+// ============================================================
+const dimensionMeta = {
+  RISK:   { name: '风险偏好',   model: '风险模型' },
+  HORIZON: { name: '投资周期',   model: '时间模型' },
+  ANALYSIS: { name: '分析深度',   model: '研究模型' },
+  EMOTION: { name: '情绪控制',   model: '心理模型' },
+  DIVERS: { name: '分散程度',   model: '配置模型' },
+  ACTION: { name: '操作频率',   model: '交易模型' },
+  INFO:   { name: '信息敏感度', model: '信息模型' },
+  CONTRA: { name: '逆向倾向',   model: '思维模型' }
+};
+
+const dimensionOrder = Object.keys(dimensionMeta);
+
+// ============================================================
+// 题目（20 道）
+// ============================================================
+const questions = [
+  // RISK - 风险偏好（3 题）
+  { id: 'q1', dim: 'RISK', text: '你买入一只股票后，第二天跌了 8%，你的第一反应是？',
+    options: [
+      { label: '赶紧止损，不能再跌了', score: 1 },
+      { label: '有点慌，但先看看原因再决定', score: 2 },
+      { label: '继续持有，等它反弹', score: 3 },
+      { label: '加仓，跌下来正好便宜', score: 4 },
+      { label: '越跌越买，越跌越兴奋', score: 5 }
+    ]},
+  { id: 'q2', dim: 'RISK', text: '如果有 10 万闲钱，你会怎么分配？',
+    options: [
+      { label: '全部存银行/买国债，安全第一', score: 1 },
+      { label: '大部分买稳健理财，小部分买基金', score: 2 },
+      { label: '一半基金一半股票，均衡配置', score: 3 },
+      { label: '大部分买股票，追求高收益', score: 4 },
+      { label: 'All in 一只看好的股票或板块', score: 5 }
+    ]},
+  { id: 'q3', dim: 'RISK', text: '朋友推荐了一只波动很大的概念股，你会？',
+    options: [
+      { label: '不参与，概念股水太深', score: 1 },
+      { label: '先研究一下，但大概率不买', score: 2 },
+      { label: '少量参与，当交学费', score: 3 },
+      { label: '认真研究后如果逻辑对就买', score: 4 },
+      { label: '直接上，高风险高回报', score: 5 }
+    ]},
+  // HORIZON - 投资周期（2 题）
+  { id: 'q4', dim: 'HORIZON', text: '你持有一只股票的理想时间是多久？',
+    options: [
+      { label: '几天到几周，赚一波就跑', score: 1 },
+      { label: '一到三个月，吃一个波段', score: 2 },
+      { label: '半年到一年，等价值回归', score: 3 },
+      { label: '一到三年，陪伴好公司成长', score: 4 },
+      { label: '五年以上，甚至想传给下一代', score: 5 }
+    ]},
+  { id: 'q5', dim: 'HORIZON', text: '你更认同以下哪种说法？',
+    options: [
+      { label: '天下武功，唯快不破', score: 1 },
+      { label: '落袋为安，赚到手的才是钱', score: 2 },
+      { label: '让子弹飞一会儿', score: 3 },
+      { label: '好公司值得长期持有', score: 4 },
+      { label: '复利是世界第八大奇迹', score: 5 }
+    ]},
+  // ANALYSIS - 分析深度（3 题）
+  { id: 'q6', dim: 'ANALYSIS', text: '买股票之前，你会做哪些功课？',
+    options: [
+      { label: '看名字顺眼就买，或者听消息', score: 1 },
+      { label: '看看 K 线图和最近的新闻', score: 2 },
+      { label: '看看财务数据和研报', score: 3 },
+      { label: '深入分析财报、行业、竞争格局', score: 4 },
+      { label: '自己做 DCF 模型，算内在价值', score: 5 }
+    ]},
+  { id: 'q7', dim: 'ANALYSIS', text: '你平时看财经内容的频率是？',
+    options: [
+      { label: '基本不看，太烦', score: 1 },
+      { label: '偶尔刷刷财经新闻', score: 2 },
+      { label: '每天都看，关注市场动态', score: 3 },
+      { label: '深度阅读研报和深度分析', score: 4 },
+      { label: '自己写分析报告，还做数据模型', score: 5 }
+    ]},
+  { id: 'q8', dim: 'ANALYSIS', text: '有人在你面前说"这只股票 PE 才 10 倍，太便宜了"，你会？',
+    options: [
+      { label: 'PE 是什么？', score: 1 },
+      { label: 'PE 低不一定好，可能基本面有问题', score: 3 },
+      { label: '会去看看 PE 低的原因是什么', score: 4 },
+      { label: 'PE 只是参考，要看更多指标', score: 4 },
+      { label: '会结合 PB、ROE、增长率一起分析', score: 5 }
+    ]},
+  // EMOTION - 情绪控制（3 题）
+  { id: 'q9', dim: 'EMOTION', text: '你买入的股票连续一周下跌，你的状态是？',
+    options: [
+      { label: '焦虑得睡不着觉', score: 1 },
+      { label: '心里不舒服，但还能忍住不看账户', score: 2 },
+      { label: '正常波动，没什么大不了的', score: 3 },
+      { label: '反而觉得是加仓的机会', score: 4 },
+      { label: '毫无波澜，我的逻辑没变就行', score: 5 }
+    ]},
+  { id: 'q10', dim: 'EMOTION', text: '你卖飞的股票（卖了就涨）之后涨了 50%，你会？',
+    options: [
+      { label: '拍大腿，后悔好几天', score: 1 },
+      { label: '有点遗憾，但安慰自己赚到了该赚的', score: 3 },
+      { label: '没什么感觉，卖飞是常态', score: 4 },
+      { label: '反思卖出逻辑哪里出了问题', score: 5 },
+      { label: '完全不在乎，我的交易系统会告诉我下次怎么做', score: 5 }
+    ]},
+  { id: 'q11', dim: 'EMOTION', text: '周围所有人都在讨论一只暴涨的股票，你没买，你的感受是？',
+    options: [
+      { label: '非常后悔没跟上，下次一定', score: 1 },
+      { label: '有点心动，想追进去', score: 2 },
+      { label: '有点遗憾，但知道自己为什么没买', score: 3 },
+      { label: '冷静分析：现在追还来得及吗？', score: 4 },
+      { label: '完全不焦虑，别人的赚钱和我无关', score: 5 }
+    ]},
+  // DIVERS - 分散程度（2 题）
+  { id: 'q12', dim: 'DIVERS', text: '你同时持有的股票/基金数量通常是？',
+    options: [
+      { label: '1-2 只，集中就是力量', score: 1 },
+      { label: '3-5 只，适度分散', score: 3 },
+      { label: '5-10 只，分散到不同行业', score: 4 },
+      { label: '10-20 只，广泛分散', score: 5 },
+      { label: '20+，或者直接买指数基金', score: 5 }
+    ]},
+  { id: 'q13', dim: 'DIVERS', text: '你怎么看待"把鸡蛋放在一个篮子里，然后看好这个篮子"这句话？',
+    options: [
+      { label: '完全认同，集中才能赚大钱', score: 1 },
+      { label: '有道理，但我不敢这么做', score: 2 },
+      { label: '看情况，看准了就集中', score: 3 },
+      { label: '不认同，分散才是免费的午餐', score: 5 },
+      { label: '核心仓位集中，卫星仓位分散', score: 4 }
+    ]},
+  // ACTION - 操作频率（3 题）
+  { id: 'q14', dim: 'ACTION', text: '你平均多久操作一次账户？',
+    options: [
+      { label: '每天看好几遍，忍不住', score: 1 },
+      { label: '每周操作几次', score: 2 },
+      { label: '每月调整一次', score: 3 },
+      { label: '每季度检视一次', score: 4 },
+      { label: '买了就不管了，忘了最好', score: 5 }
+    ]},
+  { id: 'q15', dim: 'ACTION', text: '你打开交易软件的频率？',
+    options: [
+      { label: '开盘期间一直开着', score: 1 },
+      { label: '每天看几次行情', score: 2 },
+      { label: '收盘后看一次就够了', score: 3 },
+      { label: '一周看一次', score: 4 },
+      { label: '设置好条件单就不管了', score: 5 }
+    ]},
+  { id: 'q16', dim: 'ACTION', text: '你更享受哪种投资体验？',
+    options: [
+      { label: '短线交易的刺激感', score: 1 },
+      { label: '抓到一波上涨的成就感', score: 2 },
+      { label: '研究出好标的的智力快感', score: 4 },
+      { label: '看到账户逐年稳步增长的满足感', score: 5 },
+      { label: '构建并维护一个完整投资组合的掌控感', score: 4 }
+    ]},
+  // INFO - 信息敏感度（2 题）
+  { id: 'q17', dim: 'INFO', text: '你会关注哪些信息来源？',
+    options: [
+      { label: '短视频/微信群里的推荐', score: 1 },
+      { label: '财经 APP 的推送新闻', score: 2 },
+      { label: '专业财经媒体的深度报道', score: 3 },
+      { label: '券商研报和原始公告', score: 4 },
+      { label: '一手数据、公告、财报原文', score: 5 }
+    ]},
+  { id: 'q18', dim: 'INFO', text: '看到一条重大利好消息，你会？',
+    options: [
+      { label: '先买再说，怕错过', score: 1 },
+      { label: '先看看别人怎么说', score: 2 },
+      { label: '查一下消息来源是否可靠', score: 3 },
+      { label: '分析这个消息是否已经被市场定价', score: 4 },
+      { label: '结合已有研究框架评估影响', score: 5 }
+    ]},
+  // CONTRA - 逆向倾向（2 题）
+  { id: 'q19', dim: 'CONTRA', text: '市场极度恐慌、大家都在割肉时，你会？',
+    options: [
+      { label: '跟着割，保命要紧', score: 1 },
+      { label: '虽然害怕，但至少不卖了', score: 2 },
+      { label: '按兵不动，等待市场企稳', score: 3 },
+      { label: '开始关注被错杀的优质标的', score: 4 },
+      { label: '兴奋，别人恐惧的时候我贪婪', score: 5 }
+    ]},
+  { id: 'q20', dim: 'CONTRA', text: '当所有人都说"这次不一样"的时候，你的反应是？',
+    options: [
+      { label: '这次可能真的不一样', score: 1 },
+      { label: '有点怀疑，但又怕错过新时代', score: 2 },
+      { label: '历史上每次都说"这次不一样"', score: 4 },
+      { label: '保持警惕，但愿意验证新逻辑', score: 3 },
+      { label: '越多人说越危险，准备撤退', score: 5 }
+    ]}
+];
+
+// ============================================================
+// 维度 H/M/L 解读文案
+// ============================================================
+const DIM_EXPLANATIONS = {
+  RISK: {
+    L: '风险厌恶型，本金安全第一，宁可少赚也不愿承受大波动。',
+    M: '风险中性，能接受适度波动，在收益和风险之间找平衡。',
+    H: '风险偏好型，愿意用高波动换取高收益，跌了也敢加仓。'
+  },
+  HORIZON: {
+    L: '短线交易者，追求快速获利，持仓很少超过一个月。',
+    M: '中线投资者，愿意等一个波段或季报，但不想拿好几年。',
+    H: '长线持有者，相信时间的复利，愿意陪伴好公司成长。'
+  },
+  ANALYSIS: {
+    L: '基本不做研究，主要靠消息、直觉或别人推荐。',
+    M: '会看一些基础数据和新闻，但不做深度研究。',
+    H: '深度研究型，财报、研报、行业分析是投资决策的基础。'
+  },
+  EMOTION: {
+    L: '情绪容易受市场波动影响，涨跌都会强烈反应。',
+    M: '有一定情绪管理能力，但极端行情下还是会焦虑。',
+    H: '情绪稳定器，涨跌都不太影响心态，按自己的节奏来。'
+  },
+  DIVERS: {
+    L: '集中持仓，相信看准了就重仓，分散反而稀释收益。',
+    M: '适度分散，持有 3-10 只标的，在不同行业间分散。',
+    H: '广泛分散，信奉资产配置的力量，鸡蛋不放一个篮子。'
+  },
+  ACTION: {
+    L: '高频操作型，忍不住盯盘和频繁买卖。',
+    M: '中频调整型，定期检视组合但不天天动手。',
+    H: '低频持有型，买了就放着，减少操作频率降低犯错概率。'
+  },
+  INFO: {
+    L: '信息获取较随意，主要靠短视频、群聊或新闻推送。',
+    M: '会主动关注财经媒体和研报，但不是每日必读。',
+    H: '信息猎手，一手数据、公告原文、财报细节都不放过。'
+  },
+  CONTRA: {
+    L: '从众型，市场恐慌时容易跟着恐慌，很难逆势操作。',
+    M: '观望型，恐慌时会犹豫，不跟风但也不敢逆势。',
+    H: '逆向型，别人恐惧我贪婪，市场恐慌反而是你的机会。'
+  }
+};
+
+// ============================================================
+// 彩蛋配置
+// ============================================================
+const EASTER_EGGS = {
+  SUOHA: {
+    emoji: '😱',
+    title: '哥哥请冷静一下！',
+    body: '你测出了「SUOHA 梭哈玩家」！<br>虽然 All in 很刺激，但人家还是要提醒你：<br><strong>留得青山在，不怕没柴烧</strong><br>至少留 30% 现金当救命钱好不好～ 🥺'
+  },
+  CONGZHONG: {
+    emoji: '🐑',
+    title: '别当小绵羊！',
+    body: '你测出了「CONGZHONG 跟风星人」！<br>别人的推荐不一定适合你哦～<br>建立自己的投资体系才是正道，<br>人家陪你一起学！📚'
+  },
+  GOUZHU: {
+    emoji: '🐢',
+    title: '苟住就是赢！',
+    body: '你测出了「GOUZHU 稳健守门员」！<br>虽然赚得慢，但亏得更慢呀～<br>牛市里赚到的钱，熊市里很容易亏回去，<br>你的策略其实很聪明！🧠'
+  },
+  TANGPING: {
+    emoji: '🛋️',
+    title: '躺平也是策略！',
+    body: '你测出了「TANGPING 佛系定投」！<br>买了就忘，忘了就赚——这不是摆烂，<br>这是真正的长期主义！<br>时间是你最好的朋友～ ⏰'
+  }
+};
+
+// ============================================================
+// 投资人格类型定义
+// ============================================================
+const TYPE_LIBRARY = {
+  "HUNTER": {
+    code: "HUNTER",
+    cn: "价值猎手",
+    intro: "别人恐惧的时候，你在翻财报。",
+    desc: "HUNTER 型投资者是市场里最稀有的物种之一。你不是在买股票，你是在买企业。每一笔投资决策背后，都有扎实的财务分析和商业逻辑支撑。你不关心明天涨跌，你关心的是这家公司三年后值不值这个价。巴菲特是你的精神导师，格雷厄姆是你的启蒙老师。在别人追逐风口时，你在翻年报；在别人恐慌抛售时，你在计算安全边际。",
+    invest: "适合深度价值投资策略，关注低估值、高 ROE、现金流稳定的优质企业。建议建立自己的投资检查清单（Checklist），避免情绪干扰。可以重点关注消费、医药等长期赛道。"
+  },
+  "LACUOCUO": {
+    code: "LACUOCUO",
+    cn: "量化狂人",
+    intro: "你的交易系统比你的闹钟还准时。",
+    desc: "LACUOCUO 型投资者相信数据胜过相信直觉。你会建立交易模型、设置条件单、回测历史数据，用系统代替情绪。对你来说，投资是一门科学，不是玄学。你不追求买在最低点，你追求的是概率优势。即使单笔亏损，只要系统的期望值为正，你就能在长期中稳定盈利。",
+    invest: "适合量化/系统化交易，建议学习 Python 进行数据分析和回测。可以关注指数增强、统计套利、因子投资等策略。建立严格的交易纪律和风控规则是关键。"
+  },
+  "TANGPING": {
+    code: "TANGPING",
+    cn: "佛系定投",
+    intro: "你买了，然后你忘了。这就是你的超能力。",
+    desc: "TANGPING 型投资者是真正的长期主义者。你深知择时几乎不可能，所以选择用定投来穿越牛熊。你不盯盘、不焦虑、不因短期波动而失眠。你知道，时间是你最好的朋友。在别人疯狂交易时，你只是默默执行定投计划。这种无聊的策略，恰恰是大多数散户做不到的纪律。",
+    invest: "坚持宽基指数定投（如沪深 300、中证 500），设置自动扣款，忽略短期波动。可以适当配置债券基金降低波动。关键是坚持，不要中断定投计划。"
+  },
+  "DING": {
+    code: "DING",
+    cn: "狙击手",
+    intro: "平时一枪不发，一枪致命。",
+    desc: "DING 型投资者像极了狙击手——大部分时间按兵不动，耐心等待最佳时机。你不频繁操作，不是因为懒得动，而是因为你深知：交易越少，犯错越少。一旦机会出现，你会重仓出击。你追求的不是交易次数，而是交易质量。巴菲特说好机会不常有，你就是这句话的践行者。",
+    invest: "保持高标准的选股标准，只在确定性极高时重仓。建议建立观察池，持续跟踪优质标的，等待合适的买入时机。耐心等待市场给你好的价格。"
+  },
+  "ZHUILANG": {
+    code: "ZHUILANG",
+    cn: "趋势冲浪者",
+    intro: "风口在哪里，你就在哪里。",
+    desc: "ZHUILANG 型投资者是市场里最敏锐的猎手。你不需要知道一家公司的内在价值，你只需要知道它正在被市场关注。你擅长捕捉趋势、跟随 momentum、在热门板块中快速切换。你不恋战，赚了就跑。你不是在投资，你是在冲浪——浪来了就冲，浪退了就撤。",
+    invest: "关注市场热点和资金流向，学会识别趋势的启动和结束信号。设置严格的止盈止损纪律，避免把短线做成中线、中线做成长线。关注成交量和换手率变化。"
+  },
+  "SUOHA": {
+    code: "SUOHA",
+    cn: "梭哈玩家",
+    intro: "All in，才是人生的正确打开方式。",
+    desc: "SUOHA 型投资者是市场里最敢下注的人。你不相信分散投资是免费的午餐，你相信集中就是力量。你敢于重仓、敢于追涨、敢于在所有人都害怕的时候勇敢。当然，这种风格的风险也极高——要么一战封神，要么一战回到解放前。但对你来说，平庸比亏损更可怕。",
+    invest: "⚠️ 高风险风格，建议至少保留 30% 以上的现金储备。即使全仓一只标的，也要有明确的止损线。建议学习仓位管理，避免一次性 All in。记住：留得青山在，不怕没柴烧。"
+  },
+  "GOUZHU": {
+    code: "GOUZHU",
+    cn: "稳健守门员",
+    intro: "少亏就是赚，活着就有希望。",
+    desc: "GOUZHU 型投资者是市场里最靠谱的守门员。你不追求一夜暴富，你追求的是稳稳的幸福。你的投资组合里，固收类产品占了大半壁江山。你对风险的厌恶程度远超对收益的渴望。在别人眼里你可能太保守，但你知道，牛市里赚到的钱，熊市里很容易亏回去。你的目标是不亏钱，然后再谈赚钱。",
+    invest: "以固收+策略为核心，配置货币基金、债券基金打底（60-70%），小部分配置指数基金和优质蓝筹（30-40%）。定期再平衡，保持目标配比。"
+  },
+  "MUYOU": {
+    code: "MUYOU",
+    cn: "游牧学习者",
+    intro: "今天学价值，明天学量化，后天…再看吧。",
+    desc: "MUYOU 型投资者是市场里的游牧民族——你在学习各种投资方法的路上，但还没有找到真正适合自己的那一个。你读过巴菲特的书，也研究过量化策略，试过定投也做过短线。你什么都懂一点，但什么都还没有形成系统。这不是坏事——说明你在探索。但你需要尽快找到最适合自己的风格，否则很容易在学的过程中反复犯错。",
+    invest: "建议先做风险测评，确定自己的风险承受能力。然后选择 1-2 种主流投资策略深入学习（如指数定投或价值投资），先形成框架再逐步优化。不要同时尝试太多策略。"
+  },
+  "CONGZHONG": {
+    code: "CONGZHONG",
+    cn: "跟风星人",
+    intro: "大家都买，那我也买点吧。",
+    desc: "CONGZHONG 型投资者是市场里的跟随者。你没有自己的投资体系，主要依靠别人的推荐来做决策——朋友推荐、大 V 推荐、群里有人说起。这不丢人，大多数散户都是从这个阶段开始的。但你要意识到：别人的逻辑不一定适合你，别人能承受的波动你未必能承受。建立自己的独立思考能力，是你最需要跨过的一道坎。",
+    invest: "⚠️ 现阶段最重要的是建立基础投资知识。建议从指数基金定投开始，先感受市场波动。同时学习基本的财务知识和投资框架。不要盲目跟风操作，先搞清楚为什么买再动手。"
+  },
+  "BUJU": {
+    code: "BUJU",
+    cn: "资产配置师",
+    intro: "你不是在选股，你是在搭建一座城堡。",
+    desc: "BUJU 型投资者是市场里的架构师。你不关注单只股票的涨跌，你关注的是整体组合的风险收益比。你会做资产配置、行业分散、定期再平衡。你知道不要把鸡蛋放在一个篮子里不是鸡汤，是经过验证的数学原理。你的投资组合像一个精心设计的生态系统——每个部分都有自己的角色，共同实现整体目标。",
+    invest: "继续保持资产配置思维。建议采用核心-卫星策略：核心仓位（60-70%）用宽基指数，卫星仓位（30-40%）做行业/主题配置。每年做 1-2 次再平衡，维持目标配比。"
+  }
+};
+
+// 人格类型的 8 维模式串（RISK, HORIZON, ANALYSIS, EMOTION, DIVERS, ACTION, INFO, CONTRA）
+const NORMAL_TYPES = [
+  { code: "HUNTER",    pattern: "M-H-H-H-M-M-H-H" },
+  { code: "LACUOCUO",  pattern: "M-M-H-H-M-H-H-M" },
+  { code: "TANGPING",  pattern: "L-H-L-H-H-L-L-M" },
+  { code: "DING",      pattern: "M-H-H-H-L-L-H-H" },
+  { code: "ZHUILANG",  pattern: "H-L-L-L-L-H-M-M" },
+  { code: "SUOHA",     pattern: "H-L-M-L-L-H-M-L" },
+  { code: "GOUZHU",    pattern: "L-M-M-M-H-L-M-H" },
+  { code: "MUYOU",     pattern: "M-M-M-M-M-M-M-M" },
+  { code: "CONGZHONG", pattern: "L-L-L-L-L-M-L-L" },
+  { code: "BUJU",      pattern: "M-H-M-H-H-M-H-M" }
+];
+
+// ============================================================
+// 工具函数
+// ============================================================
+function getToday() {
+  return new Date(Date.now() + 8 * 3600000).toISOString().split('T')[0];
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ============================================================
+// 应用状态
+// ============================================================
+const app = {
+  answers: {},
+  shuffledQuestions: []
+};
+
+// ============================================================
+// 渲染题目
+// ============================================================
+function renderQuestions() {
+  const list = document.getElementById('questionList');
+  list.innerHTML = '';
+
+  app.shuffledQuestions.forEach((q, index) => {
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = `card-${q.id}`;
+
+    const dim = dimensionMeta[q.dim];
+    card.innerHTML = `
+      <div class="q-label">Q${index + 1} · ${dim.name}</div>
+      <div class="q-text">${q.text}</div>
+      <div class="options" id="opts-${q.id}">
+        ${q.options.map((opt, i) => `
+          <div class="option" data-qid="${q.id}" data-score="${opt.score}" onclick="selectOption('${q.id}', ${opt.score}, this)">
+            <div class="dot"></div>
+            <span>${opt.label}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function selectOption(qid, score, el) {
+  app.answers[qid] = score;
+  const opts = document.querySelectorAll(`[data-qid="${qid}"]`);
+  opts.forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = app.shuffledQuestions.length;
+  const answered = Object.keys(app.answers).length;
+  const pct = Math.round((answered / total) * 100);
+
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${answered} / ${total}`;
+
+  const btn = document.getElementById('submitBtn');
+  const hint = document.getElementById('submitHint');
+
+  if (answered === total) {
+    btn.disabled = false;
+    hint.textContent = '✅ 全部答完！点击查看结果';
+    hint.style.color = '#2d7d46';
+  } else {
+    btn.disabled = true;
+    hint.textContent = `还差 ${total - answered} 题，加油～`;
+    hint.style.color = '';
+  }
+}
+
+// ============================================================
+// 计算结果
+// ============================================================
+function levelName(score, dim) {
+  const qCounts = { RISK: 3, HORIZON: 2, ANALYSIS: 3, EMOTION: 3, DIVERS: 2, ACTION: 3, INFO: 2, CONTRA: 2 };
+  const n = qCounts[dim] || 3;
+  if (n === 2) {
+    if (score >= 8) return 'H';
+    if (score >= 5) return 'M';
+    return 'L';
+  } else {
+    if (score >= 11) return 'H';
+    if (score >= 7) return 'M';
+    return 'L';
+  }
+}
+
+function levelNum(l) {
+  return l === 'H' ? 3 : l === 'M' ? 2 : 1;
+}
+
+function computeResult() {
+  // 1. 计算各维度得分
+  const rawScores = {};
+  dimensionOrder.forEach(dim => { rawScores[dim] = 0; });
+  questions.forEach(q => {
+    rawScores[q.dim] += Number(app.answers[q.id] || 0);
+  });
+
+  // 2. 映射为 H/M/L
+  const levels = {};
+  dimensionOrder.forEach(dim => {
+    levels[dim] = levelName(rawScores[dim], dim);
+  });
+
+  // 3. 匹配人格类型
+  const userVector = dimensionOrder.map(dim => levels[dim]);
+  const ranked = NORMAL_TYPES.map(type => {
+    const vector = type.pattern.split('-');
+    let distance = 0;
+    let exact = 0;
+    for (let i = 0; i < vector.length; i++) {
+      const levelDiff = Math.abs(levelNum(userVector[i]) - levelNum(vector[i]));
+      distance += levelDiff;
+      if (userVector[i] === vector[i]) exact += 1;
+    }
+    const similarity = Math.max(0, Math.round((1 - distance / 16) * 100));
+    return { ...type, ...TYPE_LIBRARY[type.code], distance, exact, similarity };
+  }).sort((a, b) => {
+    if (a.distance !== b.distance) return a.distance - b.distance;
+    if (b.exact !== a.exact) return b.exact - a.exact;
+    return b.similarity - a.similarity;
+  });
+
+  const best = ranked[0];
+
+  // 4. 渲染结果
+  document.getElementById('typeCode').textContent = best.code;
+  document.getElementById('typeCn').textContent = best.cn;
+  document.getElementById('modeKicker').textContent = '你的投资人格是';
+  document.getElementById('matchBadge').textContent = `匹配度 ${best.similarity}% · 精准命中 ${best.exact}/8 维`;
+  document.getElementById('resultIntro').textContent = best.intro;
+  document.getElementById('resultDesc').textContent = best.desc;
+  document.getElementById('investAdvice').textContent = best.invest;
+
+  // 渲染维度评分 + 解读
+  const dimContainer = document.getElementById('dimensions');
+  dimContainer.innerHTML = '<h3>📊 八维评分</h3>';
+  const barColors = { H: '#c4392d', M: '#e8a87c', L: '#85cdca' };
+
+  dimensionOrder.forEach(dim => {
+    const meta = dimensionMeta[dim];
+    const level = levels[dim];
+    const pct = (levelNum(level) / 3) * 100;
+    const color = barColors[level];
+    const explanation = DIM_EXPLANATIONS[dim]?.[level] || '';
+
+    const groupDiv = document.createElement('div');
+    groupDiv.className = 'dim-group';
+    groupDiv.innerHTML = `
+      <div class="dim-row">
+        <span class="dim-label">${meta.name}</span>
+        <div class="dim-bar-bg">
+          <div class="dim-bar-fill" style="width:${pct}%;background:${color}"></div>
+        </div>
+        <span class="dim-level" style="color:${color}">${level}</span>
+      </div>
+      <div class="dim-explain">${explanation}</div>
+    `;
+    dimContainer.appendChild(groupDiv);
+  });
+
+  showScreen('result');
+
+  // 5. 检查彩蛋
+  const egg = EASTER_EGGS[best.code];
+  if (egg) {
+    setTimeout(() => showEasterEgg(egg), 800);
+  }
+
+  // 6. 绑定分享按钮
+  document.getElementById('shareBtn').onclick = () => copyResult(best, levels);
+}
+
+// ============================================================
+// 彩蛋
+// ============================================================
+function showEasterEgg(egg) {
+  document.getElementById('eggEmoji').textContent = egg.emoji;
+  document.getElementById('eggTitle').textContent = egg.title;
+  document.getElementById('eggBody').innerHTML = egg.body;
+  document.getElementById('easterEgg').classList.add('show');
+}
+
+function closeEasterEgg() {
+  document.getElementById('easterEgg').classList.remove('show');
+}
+
+// ============================================================
+// 分享
+// ============================================================
+function copyResult(best, levels) {
+  const today = getToday();
+  let text = `🧠 我的投资人格测试结果（${today}）\n`;
+  text += `━━━━━━━━━━━━━━━\n\n`;
+  text += `🎯 我是「${best.code} ${best.cn}」\n`;
+  text += `💬 ${best.intro}\n`;
+  text += `📊 匹配度 ${best.similarity}% · 精准命中 ${best.exact}/8 维\n\n`;
+  text += `📊 八维评分\n`;
+  dimensionOrder.forEach(dim => {
+    const level = levels[dim];
+    const name = dimensionMeta[dim].name;
+    text += `  ${name}：${level}\n`;
+  });
+  text += `\n💡 来自 CLUB 投资人格测试`;
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('shareBtn');
+      btn.textContent = '✅ 已复制到剪贴板！';
+      setTimeout(() => { btn.textContent = '📋 复制结果文字分享'; }, 2000);
+    }).catch(() => {
+      alert('复制失败，请手动截图分享～');
+    });
+  } else {
+    alert('复制失败，请手动截图分享～');
+  }
+}
+
+// ============================================================
+// 事件绑定
+// ============================================================
+function startTest() {
+  app.answers = {};
+  app.shuffledQuestions = shuffle(questions);
+  renderQuestions();
+  updateProgress();
+  showScreen('test');
+}
+
+document.getElementById('startBtn').addEventListener('click', startTest);
+document.getElementById('submitBtn').addEventListener('click', computeResult);
+document.getElementById('restartBtn').addEventListener('click', startTest);
+</script>
+</body>
+</html>
