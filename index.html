@@ -82,8 +82,8 @@
     .share-hint { font-size: 12px; color: var(--text-secondary); margin-top: 8px; }
     .share-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.92); z-index: 999; flex-direction: column; align-items: center; justify-content: flex-start; padding: 20px; overflow-y: auto; }
     .share-modal.show { display: flex; }
-    .share-modal .modal-title { color: rgba(255,255,255,0.6); font-size: 13px; margin: 16px 0; text-align: center; }
-    .share-modal img { max-width: 100%; width: 400px; height: auto; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+    .share-modal .modal-title { color: rgba(255,255,255,0.7); font-size: 14px; margin: 16px 0; text-align: center; }
+    .share-modal img { max-width: 100%; width: 380px; height: auto; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); background: #fff; }
     .share-modal .modal-actions { display: flex; gap: 12px; margin: 20px 0; flex-wrap: wrap; justify-content: center; }
     .share-modal .btn-download { padding: 12px 32px; background: var(--accent); color: #fff; border: none; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font-cn); }
     .share-modal .btn-close-modal { padding: 12px 32px; background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font-cn); }
@@ -333,367 +333,90 @@ function levelName(score, dim) {
 }
 function levelNum(l) { return l === 'H' ? 3 : l === 'M' ? 2 : 1; }
 
-// QR Code generator (minimal implementation)
-const QRCode = (function() {
-  const E = { N: 0, M: 1, Q: 2, H: 3 };
-  const G = [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
-  // Simplified QR: we use a pre-built approach via canvas drawing for short URLs
-  // For production, use a full QR library. Here we draw a simple scannable QR for short URLs.
-  // Since embedding a full QR library is ~5KB, we use an online API fallback for the QR image.
-  return {
-    generate: function(text, size) {
-      // Use a lightweight QR approach: encode text as QR matrix
-      // For simplicity with short URLs, we'll use the qrcode.js approach inline
-      return null; // signal to use fallback
-    }
-  };
-})();
-
-// Minimal QR Code implementation (supports alphanumeric + byte mode, versions 1-10, EC level M)
-const QRGen = (function(){
-  // GF(256) arithmetic
-  const GF_EXP = new Uint8Array(512), GF_LOG = new Uint8Array(256);
-  (function(){
-    let x=1;
-    for(let i=0;i<255;i++){GF_EXP[i]=x;GF_LOG[x]=i;x<<=1;if(x>=256)x^=0x11d;}
-    for(let i=255;i<512;i++)GF_EXP[i]=GF_EXP[i-255];
-  })();
-  function gfMul(a,b){return a===0||b===0?0:GF_EXP[GF_LOG[a]+GF_LOG[b]];}
-  function rsGenPoly(n){let g=[1];for(let i=0;i<n;i++){let ng=new Array(g.length+1).fill(0);for(let j=0;j<g.length;j++){ng[j]^=g[j];ng[j+1]^=gfMul(g[j],GF_EXP[i]);}g=ng;}return g;}
-  function rsEncode(data,nsym){const gen=rsGenPoly(nsym);const res=new Uint8Array([...data,...new Uint8Array(nsym)]);for(let i=0;i<data.length;i++){const c=res[i];if(c)for(let j=1;j<gen.length;j++)res[i+j]^=gfMul(gen[j],c);}return res.slice(data.length);}
-
-  // Alignment pattern locations
-  const ALIGN_PAT_POS = [null,[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50]];
-
-  // Version info
-  const VERSION_EC_DATA = {
-    // version: { totalCodewords, ecCodewordsPerBlock, numBlocks: [group1, count1, group2, count2] }
-    1: {t:26,e:10,b:[1,26,0,0]}, 2: {t:44,e:16,b:[1,44,0,0]}, 3: {t:70,e:26,b:[1,70,0,0]},
-    4: {t:100,e:18,b:[2,50,0,0]}, 5: {t:134,e:24,b:[2,67,0,0]}, 6: {t:172,e:16,b:[4,43,0,0]},
-    7: {t:196,e:18,b:[2,73,2,74]}, 8: {t:242,e:22,b:[2,80,2,81]}, 9: {t:292,e:22,b:[3,87,2,88]},
-    10: {t:346,e:26,b:[4,94,2,95]}
-  };
-
-  function getVersion(dataLen) {
-    // For byte mode: 4 bits mode + count bits + data
-    for (let v = 1; v <= 10; v++) {
-      const ccBits = v <= 9 ? 8 : 16;
-      const capacity = VERSION_EC_DATA[v];
-      const totalData = capacity.t - capacity.e * (capacity.b[0] + capacity.b[2]);
-      const dataCapacity = totalData - 1 - Math.ceil(ccBits / 8);
-      if (dataLen <= dataCapacity) return v;
-    }
-    return -1;
-  }
-
-  function getNumECBlocks(ver) {
-    const v = VERSION_EC_DATA[ver];
-    return v.b;
-  }
-
-  // Interleave data + EC
-  function interleave(dataBlocks, ecBlocks) {
-    const result = [];
-    const maxDataLen = Math.max(...dataBlocks.map(b => b.length));
-    for (let i = 0; i < maxDataLen; i++) for (const block of dataBlocks) if (i < block.length) result.push(block[i]);
-    const maxEcLen = Math.max(...ecBlocks.map(b => b.length));
-    for (let i = 0; i < maxEcLen; i++) for (const block of ecBlocks) if (i < block.length) result.push(block[i]);
-    return result;
-  }
-
-  // Place data bits in matrix
-  function placeData(matrix, data, size) {
-    const bits = [];
-    for (const b of data) for (let i = 7; i >= 0; i--) bits.push((b >> i) & 1);
-    let idx = 0, upward = true, col = size - 1, totalCells = size * size;
-    while (col >= 0) {
-      if (col === 6) col = 5;
-      for (let row = 0; row < size; row++) {
-        const r = upward ? size - 1 - row : row;
-        for (let dc = 0; dc < 2; dc++) {
-          const c = col - dc;
-          if (c < 0) continue;
-          const idx2 = r * size + c;
-          if (matrix[idx2] === 0) {
-            matrix[idx2] = idx < bits.length ? (bits[idx] ? 1 : 2) : 2; // 1=dark, 2=light (data)
-            idx++;
-          }
-        }
-      }
-      upward = !upward; col -= 2;
-    }
-  }
-
-  // Timing, finder, alignment patterns
-  function placePatterns(matrix, size, version) {
-    const reserved = (r, c) => { matrix[r * size + c] = 3; }; // 3 = reserved (not data)
-
-    // Finder patterns (7x7 + 1 separator)
-    function placeFinder(sr, sc) {
-      for (let r = -1; r <= 7; r++) for (let c = -1; c <= 7; c++) {
-        const mr = sr + r, mc = sc + c;
-        if (mr < 0 || mr >= size || mc < 0 || mc >= size) continue;
-        if (r === -1 || r === 7 || c === -1 || c === 7) { matrix[mr * size + mc] = 2; continue; }
-        if ((r >= 0 && r <= 6) && (c === 0 || c === 6)) { matrix[mr * size + mc] = 1; continue; }
-        if ((c >= 0 && c <= 6) && (r === 0 || r === 6)) { matrix[mr * size + mc] = 1; continue; }
-        if (r >= 2 && r <= 4 && c >= 2 && c <= 4) { matrix[mr * size + mc] = 1; continue; }
-        matrix[mr * size + mc] = 2;
-      }
-    }
-    placeFinder(0, 0); placeFinder(0, size - 7); placeFinder(size - 7, 0);
-
-    // Timing patterns
-    for (let i = 8; i < size - 8; i++) {
-      if (matrix[6 * size + i] === 0) matrix[6 * size + i] = (i % 2 === 0) ? 1 : 2;
-      if (matrix[i * size + 6] === 0) matrix[i * size + 6] = (i % 2 === 0) ? 1 : 2;
-    }
-
-    // Alignment patterns
-    if (version >= 2) {
-      const positions = ALIGN_PAT_POS[version];
-      for (const r of positions) for (const c of positions) {
-        if (r < 9 && c < 9) continue;
-        if (r < 9 && c > size - 9) continue;
-        if (r > size - 9 && c < 9) continue;
-        for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) {
-          const mr = r + dr, mc = c + dc;
-          if (mr < 0 || mr >= size || mc < 0 || mc >= size) continue;
-          if (Math.abs(dr) === 2 || Math.abs(dc) === 2 || (dr === 0 && dc === 0))
-            matrix[mr * size + mc] = 1;
-          else matrix[mr * size + mc] = 2;
-        }
-      }
-    }
-
-    // Reserve format info areas
-    for (let i = 0; i < 8; i++) {
-      if (matrix[8 * size + i] === 0) matrix[8 * size + i] = 2;
-      if (matrix[i * size + 8] === 0) matrix[i * size + 8] = 2;
-      if (matrix[8 * size + (size - 1 - i)] === 0) matrix[8 * size + (size - 1 - i)] = 2;
-      if (matrix[(size - 1 - i) * size + 8] === 0) matrix[(size - 1 - i) * size + 8] = 2;
-    }
-    matrix[(size - 8) * size + 8] = 2; // dark module
-  }
-
-  // Mask patterns
-  function maskFn(mask, r, c) {
-    switch(mask) {
-      case 0: return (r + c) % 2 === 0;
-      case 1: return r % 2 === 0;
-      case 2: return c % 3 === 0;
-      case 3: return (r + c) % 3 === 0;
-      case 4: return (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0;
-      case 5: return ((r * c) % 2) + ((r * c) % 3) === 0;
-      case 6: return (((r * c) % 2) + ((r * c) % 3)) % 2 === 0;
-      case 7: return (((r + c) % 2) + ((r * c) % 3)) % 2 === 0;
-    }
-  }
-
-  function applyMask(matrix, size, mask) {
-    const result = new Uint8Array(matrix);
-    for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) {
-      if (result[r * size + c] === 3 || result[r * size + c] === 0) continue;
-      if (result[r * size + c] === 2) { // data cell
-        result[r * size + c] = maskFn(mask, r, c) ? 2 : 1;
-      }
-    }
-    return result;
-  }
-
-  // Penalty calculation (simplified)
-  function penaltyScore(m, size) {
-    let score = 0;
-    // Rule 1: consecutive same-color cells in row/col
-    for (let r = 0; r < size; r++) { let count = 1; for (let c = 1; c < size; c++) { if (m[r*size+c]===m[r*size+c-1]) count++; else { if(count>=5)score+=count-2; count=1; } } if(count>=5)score+=count-2; }
-    for (let c = 0; c < size; c++) { let count = 1; for (let r = 1; r < size; r++) { if (m[r*size+c]===m[(r-1)*size+c]) count++; else { if(count>=5)score+=count-2; count=1; } } if(count>=5)score+=count-2; }
-    // Rule 2: 2x2 blocks
-    for (let r = 0; r < size-1; r++) for (let c = 0; c < size-1; c++) { const v = m[r*size+c]; if(v===m[r*size+c+1]&&v===m[(r+1)*size+c]&&v===m[(r+1)*size+c+1]) score+=3; }
-    // Rule 3: finder-like patterns
-    const p1=[1,0,1,1,1,0,1,0,0,0,0], p2=[0,0,0,0,1,0,1,1,1,0,1];
-    for(let r=0;r<size;r++)for(let c=0;c<=size-11;c++){let m1=1,m2=1;for(let k=0;k<11;k++){if(m[r*size+c+k]!==p1[k])m1=0;if(m[r*size+c+k]!==p2[k])m2=0;}if(m1)score+=40;if(m2)score+=40;}
-    for(let c=0;c<size;c++)for(let r=0;r<=size-11;r++){let m1=1,m2=1;for(let k=0;k<11;k++){if(m[(r+k)*size+c]!==p1[k])m1=0;if(m[(r+k)*size+c]!==p2[k])m2=0;}if(m1)score+=40;if(m2)score+=40;}
-    // Rule 4: dark/light proportion
-    let dark=0;for(let i=0;i<size*size;i++)if(m[i]===1)dark++;
-    const pct=dark*100/(size*size); const prev5=Math.floor(pct/5)*5; const next5=prev5+5;
-    score+=Math.min(Math.abs(prev5-50)/5,Math.abs(next5-50)/5)*10;
-    return score;
-  }
-
-  // Format info encoding
-  function getFormatBits(mask) {
-    // EC level M = 00
-    const data = (0 << 3) | mask; // 00 + mask(3 bits)
-    // BCH(15,5) encoding
-    const gen = 0x537; // 10100110111
-    let bits = data << 10;
-    for (let i = 4; i >= 0; i--) if (bits & (1 << (i + 10))) bits ^= gen << i;
-    const format = ((data << 10) | bits) ^ 0x5412; // XOR mask
-    return format;
-  }
-
-  function placeFormatInfo(matrix, size, mask) {
-    const fmt = getFormatBits(mask);
-    const positions1 = [
-      [8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],
-      [7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]
-    ];
-    const positions2 = [
-      [size-1,8],[size-2,8],[size-3,8],[size-4,8],[size-5,8],[size-6,8],[size-7,8],
-      [8,size-8],[8,size-7],[8,size-6],[8,size-5],[8,size-4],[8,size-3],[8,size-2],[8,size-1]
-    ];
-    for (let i = 0; i < 15; i++) {
-      const bit = (fmt >> i) & 1;
-      const [r1,c1] = positions1[i];
-      const [r2,c2] = positions2[i];
-      matrix[r1*size+c1] = bit ? 1 : 2;
-      matrix[r2*size+c2] = bit ? 1 : 2;
-    }
-  }
-
-  function generate(text) {
-    const data = new TextEncoder().encode(text);
-    const version = getVersion(data.length);
-    if (version < 1) return null;
-
-    const size = version * 4 + 17;
-    const verInfo = VERSION_EC_DATA[version];
-    const totalData = verInfo.t - verInfo.e * (verInfo.b[0] + verInfo.b[2]);
-
-    // Encode data: mode indicator (4) + count + data + terminator + padding
-    const ccBits = version <= 9 ? 8 : 16;
-    const bitStream = [];
-    // Mode: byte mode = 0100
-    [0,1,0,0].forEach(b => bitStream.push(b));
-    // Character count
-    for (let i = ccBits - 1; i >= 0; i--) bitStream.push((data.length >> i) & 1);
-    // Data
-    for (const b of data) for (let i = 7; i >= 0; i--) bitStream.push((b >> i) & 1);
-    // Terminator
-    const termLen = Math.min(4, totalData * 8 - bitStream.length);
-    for (let i = 0; i < termLen; i++) bitStream.push(0);
-    // Pad to byte boundary
-    while (bitStream.length % 8 !== 0) bitStream.push(0);
-    // Pad bytes
-    const padBytes = [0xEC, 0x11]; let pi = 0;
-    while (bitStream.length < totalData * 8) { for (let i = 7; i >= 0; i--) bitStream.push((padBytes[pi] >> i) & 1); pi = 1 - pi; }
-
-    // Convert to bytes
-    const dataBytes = new Uint8Array(totalData);
-    for (let i = 0; i < totalData; i++) { let b = 0; for (let j = 0; j < 8; j++) b = (b << 1) | bitStream[i * 8 + j]; dataBytes[i] = b; }
-
-    // Split into blocks and compute EC
-    const [g1count, g1size, g2count, g2size] = verInfo.b;
-    const dataBlocks = [], ecBlocks = [];
-    let offset = 0;
-    for (let i = 0; i < g1count; i++) { const block = dataBytes.slice(offset, offset + g1size); dataBlocks.push(block); ecBlocks.push(rsEncode(block, verInfo.e)); offset += g1size; }
-    for (let i = 0; i < g2count; i++) { const block = dataBytes.slice(offset, offset + g2size); dataBlocks.push(block); ecBlocks.push(rsEncode(block, verInfo.e)); offset += g2size; }
-    const finalData = interleave(dataBlocks, ecBlocks);
-
-    // Create matrix
-    let matrix = new Uint8Array(size * size); // 0=unallocated
-
-    // Place finder, timing, alignment
-    placePatterns(matrix, size, version);
-
-    // Place data
-    placeData(matrix, finalData, size);
-
-    // Convert: 3->0 (reserved, treated as data position), 0->unallocated
-    // Actually 3 means reserved (format info area etc), treat as already placed
-    // 2 means light data, 1 means dark data, 0 means unallocated
-
-    // Apply masks and pick best
-    let bestMask = 0, bestScore = Infinity, bestMatrix = null;
-    for (let mask = 0; mask < 8; mask++) {
-      const m = applyMask(matrix, size, mask);
-      // Place format info
-      placeFormatInfo(m, size, mask);
-      const score = penaltyScore(m, size);
-      if (score < bestScore) { bestScore = score; bestMask = mask; bestMatrix = m; }
-    }
-
-    return { matrix: bestMatrix, size, version };
-  }
-
-  return { generate, get size() { return 0; } };
-})();
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+}
 
 function createShareImage(best, levels) {
   const canvas = document.createElement('canvas');
   const W = 720, scale = 2;
   const ctx = canvas.getContext('2d');
-
-  // Calculate height dynamically
-  const dimRows = dimensionOrder.length;
-  const H = 1080 + dimRows * 60;
+  const H = 1080;
   canvas.width = W * scale;
   canvas.height = H * scale;
   ctx.scale(scale, scale);
 
-  // Background
+  // === 明亮背景：白色卡片风 ===
   const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
-  bgGrad.addColorStop(0, '#1a1a1a');
-  bgGrad.addColorStop(0.5, '#2d1f1a');
-  bgGrad.addColorStop(1, '#1a1a1a');
+  bgGrad.addColorStop(0, '#ffffff');
+  bgGrad.addColorStop(0.4, '#faf8f5');
+  bgGrad.addColorStop(1, '#f0ede8');
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, W, H);
 
-  // Decorative circles
-  ctx.globalAlpha = 0.08;
+  // 顶部红色装饰线
   ctx.fillStyle = '#c4392d';
-  ctx.beginPath(); ctx.arc(W - 50, 100, 120, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(60, H - 100, 80, 0, Math.PI * 2); ctx.fill();
-  ctx.globalAlpha = 1;
+  ctx.fillRect(0, 0, W, 6);
+  // 底部红色装饰线
+  ctx.fillStyle = '#c4392d';
+  ctx.fillRect(0, H - 4, W, 4);
 
   let y = 50;
-  const pad = 40;
+  const pad = 48;
   const innerW = W - pad * 2;
 
   // CLUB badge
   ctx.fillStyle = '#c4392d';
   ctx.beginPath();
-  roundRect(ctx, pad, y, innerW, 28, 14);
+  roundRect(ctx, pad, y, innerW, 36, 18);
   ctx.fill();
   ctx.fillStyle = '#fff';
-  ctx.font = 'bold 13px "PingFang SC", sans-serif';
+  ctx.font = 'bold 14px "PingFang SC", sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('CLUB · 正行苏州', W / 2, y + 19);
-  y += 48;
+  ctx.fillText('CLUB · 正行苏州', W / 2, y + 24);
+  y += 56;
 
-  // Title
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 36px "PingFang SC", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('投资人格测试', W / 2, y + 30);
-  y += 40;
-
-  // Type code
-  ctx.font = 'bold 52px "SF Pro Text", sans-serif';
-  ctx.fillStyle = '#c4392d';
-  ctx.fillText(best.code, W / 2, y + 44);
+  // 标题
+  ctx.fillStyle = '#1a1a1a';
+  ctx.font = 'bold 34px "PingFang SC", sans-serif';
+  ctx.fillText('投资人格测试', W / 2, y + 32);
   y += 50;
 
-  // Type CN
-  ctx.font = 'bold 24px "PingFang SC", sans-serif';
-  ctx.fillStyle = '#fff';
+  // 类型代码
+  ctx.fillStyle = '#c4392d';
+  ctx.font = 'bold 56px "SF Pro Text", "Helvetica Neue", sans-serif';
+  ctx.fillText(best.code, W / 2, y + 48);
+  y += 56;
+
+  // 中文名
+  ctx.fillStyle = '#333';
+  ctx.font = 'bold 22px "PingFang SC", sans-serif';
   ctx.fillText(best.cn, W / 2, y + 26);
-  y += 36;
+  y += 40;
 
   // Intro
-  ctx.font = 'italic 16px "PingFang SC", sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.fillStyle = '#888';
+  ctx.font = '15px "PingFang SC", sans-serif';
   ctx.fillText(best.intro, W / 2, y + 20);
-  y += 30;
+  y += 44;
 
-  // Divider
-  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  // 分隔线
+  ctx.strokeStyle = '#e0dcd3';
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke();
-  y += 24;
+  y += 32;
 
-  // Dimensions
-  ctx.font = 'bold 14px "PingFang SC", sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  // 八维评分标题
+  ctx.font = 'bold 13px "PingFang SC", sans-serif';
+  ctx.fillStyle = '#999';
   ctx.textAlign = 'left';
   ctx.fillText('📊 八维评分', pad, y + 16);
   y += 32;
@@ -705,95 +428,87 @@ function createShareImage(best, levels) {
     const pct = (levelNum(level) / 3) * 100;
     const color = barColors[level];
 
+    // 维度名
     ctx.font = '13px "PingFang SC", sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.fillStyle = '#555';
     ctx.textAlign = 'left';
     ctx.fillText(meta.name, pad, y + 14);
 
-    // Bar background
-    ctx.fillStyle = 'rgba(255,255,255,0.1)';
-    ctx.beginPath(); roundRect(ctx, pad + 80, y + 3, innerW - 140, 12, 6); ctx.fill();
+    // 进度条背景
+    ctx.fillStyle = '#edeae4';
+    ctx.beginPath(); roundRect(ctx, pad + 84, y + 4, innerW - 150, 10, 5); ctx.fill();
 
-    // Bar fill
+    // 进度条填充
+    const fillW = Math.max(10, (innerW - 150) * pct / 100);
     ctx.fillStyle = color;
-    ctx.beginPath(); roundRect(ctx, pad + 80, y + 3, (innerW - 140) * pct / 100, 12, 6); ctx.fill();
+    ctx.beginPath(); roundRect(ctx, pad + 84, y + 4, fillW, 10, 5); ctx.fill();
 
-    // Level
+    // 等级标签
     ctx.font = 'bold 12px "SF Pro Text", sans-serif';
     ctx.fillStyle = color;
     ctx.textAlign = 'right';
     ctx.fillText(level, W - pad, y + 14);
 
-    y += 30;
+    y += 34;
   });
 
-  y += 10;
+  y += 16;
 
-  // Divider
-  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  // 分隔线
+  ctx.strokeStyle = '#e0dcd3';
   ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke();
-  y += 30;
+  y += 36;
 
-  // QR Code area
+  // 二维码区域
   ctx.font = '13px "PingFang SC", sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.fillStyle = '#999';
   ctx.textAlign = 'center';
   ctx.fillText('扫码测测你的投资人格', W / 2, y + 14);
-  y += 30;
+  y += 28;
 
-  // Draw QR code
   const qrUrl = 'https://vorngocnnguyene-hash.github.io/invest-personality-test/';
-  const qrResult = QRGen.generate(qrUrl);
-
-  const qrSize = 120;
+  const qrSize = 140;
   const qrX = (W - qrSize) / 2;
   const qrY = y;
 
-  if (qrResult && qrResult.matrix) {
-    const { matrix: qrMatrix, size: qrDim } = qrResult;
-    const cellSize = qrSize / qrDim;
-    ctx.fillStyle = '#fff';
-    for (let r = 0; r < qrDim; r++) for (let c = 0; c < qrDim; c++) {
-      if (qrMatrix[r * qrDim + c] === 1) {
-        ctx.fillRect(qrX + c * cellSize, qrY + r * cellSize, Math.ceil(cellSize), Math.ceil(cellSize));
-      }
-    }
-  } else {
-    // Fallback: draw a placeholder QR-like pattern
-    ctx.fillStyle = '#fff';
-    ctx.beginPath(); roundRect(ctx, qrX, qrY, qrSize, qrSize, 8); ctx.fill();
-    ctx.fillStyle = '#1a1a1a';
-    ctx.font = '11px "PingFang SC", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('扫码测试', W / 2, qrY + qrSize / 2 + 4);
-  }
-  y += qrSize + 16;
+  // 白色二维码底框
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); roundRect(ctx, qrX - 10, qrY - 10, qrSize + 20, qrSize + 20, 12); ctx.fill();
+  ctx.strokeStyle = '#e0dcd3';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); roundRect(ctx, qrX - 10, qrY - 10, qrSize + 20, qrSize + 20, 12); ctx.stroke();
 
-  // URL text
+  // 用在线 API 生成真实可扫的二维码
+  const qrImg = new Image();
+  qrImg.crossOrigin = 'anonymous';
+  qrImg.onload = function() {
+    ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+    const updatedUrl = canvas.toDataURL('image/png');
+    document.getElementById('shareImage').src = updatedUrl;
+  };
+  qrImg.onerror = function() {
+    ctx.fillStyle = '#ddd';
+    ctx.font = '12px "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('二维码加载中...', W / 2, qrY + qrSize / 2 + 4);
+  };
+  qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(qrUrl)}&bgcolor=ffffff&color=1a1a1a&margin=10`;
+
+  y += qrSize + 24;
+
+  // URL
   ctx.font = '11px "SF Pro Text", sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.fillStyle = '#ccc';
   ctx.textAlign = 'center';
   ctx.fillText('vorngocnnguyene-hash.github.io/invest-personality-test', W / 2, y + 14);
-  y += 30;
+  y += 28;
 
-  // Bottom text
+  // 底部
   ctx.font = '11px "PingFang SC", sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.fillStyle = '#ddd';
   ctx.fillText('CLUB 小葵制作 · 结果仅供娱乐参考 · 投资有风险', W / 2, y + 14);
 
   return canvas.toDataURL('image/png');
-}
-
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.arcTo(x + w, y, x + w, y + r, r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-  ctx.lineTo(x + r, y + h);
-  ctx.arcTo(x, y + h, x, y + h - r, r);
-  ctx.lineTo(x, y + r);
-  ctx.arcTo(x, y, x + r, y, r);
 }
 
 function computeResult() {
@@ -852,7 +567,6 @@ function computeResult() {
   const egg = EASTER_EGGS[best.code];
   if (egg) setTimeout(() => showEasterEgg(egg), 800);
 
-  // Bind share button
   document.getElementById('shareBtn').onclick = () => generateShare(best, levels);
 }
 
