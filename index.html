@@ -263,6 +263,12 @@ const DIM_EXPLANATIONS = {
 };
 
 const EASTER_EGGS = {
+  HUNTER: { emoji: '🎯', title: '猎手，锁定目标！', body: '你测出了「HUNTER 价值猎手」！<br>别人恐慌的时候你在翻年报，<br>别人追涨的时候你在算安全边际。<br>巴菲特要是认识你，一定想收你当徒弟 📊' },
+  LACUOCUO: { emoji: '🤖', title: '系统比人靠谱！', body: '你测出了「LACUOCUO 量化狂人」！<br>你相信概率，不相信直觉；<br>你相信回测，不相信股评。<br>你的交易系统比你的闹钟还准时 ⏰' },
+  DING: { emoji: '🔫', title: '一枪致命！', body: '你测出了「DING 狙击手」！<br>平时按兵不动，一动就是重仓。<br>你不是在交易，你是在等待。<br>耐心是你最锋利的武器 🎯' },
+  ZHUILANG: { emoji: '🏄', title: '浪来了就冲！', body: '你测出了「ZHUILANG 趋势冲浪者」！<br>风口在哪里，你就在哪里。<br>你不恋战，赚了就跑。<br>你不是在投资，你是在冲浪 🌊' },
+  MUYOU: { emoji: '🐎', title: '还在路上！', body: '你测出了「MUYOU 游牧学习者」！<br>你什么都懂一点，但什么都还没定型。<br>这不是坏事——说明你在探索。<br>找到适合自己的风格，你就无敌了 📚' },
+  BUJU: { emoji: '🏰', title: '你是在建城堡！', body: '你测出了「BUJU 资产配置师」！<br>你不关心单只股票的涨跌，<br>你关心的是整体组合的风险收益比。<br>你的投资组合就是一个生态系统 🌍' },
   SUOHA: { emoji: '😱', title: '哥哥请冷静一下！', body: '你测出了「SUOHA 梭哈玩家」！<br>虽然 All in 很刺激，但人家还是要提醒你：<br><strong>留得青山在，不怕没柴烧</strong><br>至少留 30% 现金当救命钱好不好～ 🥺' },
   CONGZHONG: { emoji: '🐑', title: '别当小绵羊！', body: '你测出了「CONGZHONG 跟风星人」！<br>别人的推荐不一定适合你哦～<br>建立自己的投资体系才是正道，<br>人家陪你一起学！📚' },
   GOUZHU: { emoji: '🐢', title: '苟住就是赢！', body: '你测出了「GOUZHU 稳健守门员」！<br>虽然赚得慢，但亏得更慢呀～<br>牛市里赚到的钱，熊市里很容易亏回去，<br>你的策略其实很聪明！🧠' },
@@ -466,7 +472,7 @@ function createShareImage(best, levels) {
   ctx.fillText('扫码测测你的投资人格', W / 2, y + 14);
   y += 28;
 
-  const qrUrl = 'https://vorngocnnguyene-hash.github.io/invest-personality-test/';
+  const qrUrl = 'http://invest.andy0908.cloud/';
   const qrSize = 140;
   const qrX = (W - qrSize) / 2;
   const qrY = y;
