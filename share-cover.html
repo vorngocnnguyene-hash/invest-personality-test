@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1200px;
+    height: 630px;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d1f1a 50%, #1a1a1a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    overflow: hidden;
+  }
+  .container {
+    text-align: center;
+    color: #fff;
+    position: relative;
+  }
+  .club-badge {
+    display: inline-block;
+    background: #c4392d;
+    color: #fff;
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    letter-spacing: 3px;
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+  h1 {
+    font-size: 56px;
+    font-weight: 900;
+    margin-bottom: 12px;
+    letter-spacing: 2px;
+  }
+  .subtitle {
+    font-size: 24px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 32px;
+  }
+  .tags {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 28px;
+  }
+  .tag {
+    background: rgba(255,255,255,0.1);
+    padding: 8px 20px;
+    border-radius: 24px;
+    font-size: 16px;
+    color: rgba(255,255,255,0.8);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .desc {
+    font-size: 18px;
+    color: rgba(255,255,255,0.5);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+  .decorative-line {
+    width: 60px;
+    height: 3px;
+    background: #c4392d;
+    margin: 0 auto 20px;
+    border-radius: 2px;
+  }
+  /* Background pattern */
+  body::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(196,57,45,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  body::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(196,57,45,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="club-badge">CLUB · 正行苏州</div>
+  <h1>投资人格测试</h1>
+  <p class="subtitle">测测你在市场中是什么类型的投资者</p>
+  <div class="tags">
+    <span class="tag">📊 20 道题</span>
+    <span class="tag">🧠 8 个维度</span>
+    <span class="tag">🎯 10 种人格</span>
+  </div>
+  <div class="decorative-line"></div>
+  <p class="desc">价值猎手 · 量化狂人 · 佛系定投 · 狙击手<br>趋势冲浪 · 梭哈玩家 · 稳健守门员 · 游牧学习者 · 跟风星人 · 资产配置师</p>
+</div>
+</body>
+</html>
